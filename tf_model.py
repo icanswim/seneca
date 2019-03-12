@@ -24,14 +24,14 @@ class TfModel(object):
 	def __init__(self, params, model_input, mode):
 		
 		if mode == tf.estimator.ModeKeys.TRAIN:
-			training = True
+			self.training = True
 		else:
-			training = False
+			self.training = False
 			
-		self.output = self._build_model(model_input, params, training=training)
+		self.output = self._build_model(model_input, params)
 		
 	@abstractmethod	
-	def _build_model(self, model_input, mode, params, training):
+	def _build_model(self, model_input, mode, params):
 		
 		return output
 		
@@ -92,7 +92,7 @@ class TreesClass(TfEstimator):
 		 
 class FfNet(TfModel):
 		
-	def _build_model(self, model_input, params, training):
+	def _build_model(self, model_input, params):
 		
 		with tf.variable_scope('ffnet-model'):
 			
@@ -100,7 +100,7 @@ class FfNet(TfModel):
 				
 				fc = self._fc_layer(model_input, units, 'fc_{}'.format(layer))
 				model_input = tf.layers.dropout(inputs=fc, rate=0.2, 
-										training=training, name='dropout_{}'.format(layer))
+										training=self.training, name='dropout_{}'.format(layer))
 		
 			output = self._fc_layer(model_input, params['n_classes'], 
 									'model-output', act=tf.identity)
@@ -127,7 +127,7 @@ class FfNet(TfModel):
 		
 class ConvNet(TfModel):
 	
-	def _build_model(self, model_input, params, training):
+	def _build_model(self, model_input, params):
 		
 		init = tf.truncated_normal_initializer(stddev=0.001, dtype=tf.float32)
 		
@@ -172,13 +172,13 @@ class ConvNet(TfModel):
 						activation=tf.nn.leaky_relu, name='dense1')
 			
 			dropout1 = tf.layers.dropout(inputs=dense1, rate=0.3, 
-						training=training, name='dropout1')
+						training=self.training, name='dropout1')
 			
 			dense2 = tf.layers.dense(inputs=dropout1, units=512, 
 						activation=tf.nn.leaky_relu, name='dense2')
 			
 			dropout2 = tf.layers.dropout(inputs=dense2, rate=0.2, 
-						training=training, name='dropout2')
+						training=self.training, name='dropout2')
 			
 			output = tf.layers.dense(inputs=dropout2, 
 						units=output_shape, name='model-output')
@@ -186,7 +186,7 @@ class ConvNet(TfModel):
 		
 class Lstm(TfModel):
 	
-	def _build_model(self, model_input, params, training):
+	def _build_model(self, model_input, params):
 		
 		if params['embedding'] is not None:
 			model_input = tf.nn.embedding_lookup(params['embedding'], model_input)
@@ -210,7 +210,7 @@ class Lstm(TfModel):
 												name='lstm')
 												
 			output, state = self.model(model_input, initial_state=None, 
-												training=training)
+												training=self.training)
 																	
 			output = tf.layers.dense(inputs=output, 
 										units=output_shape, 
