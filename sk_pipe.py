@@ -66,7 +66,7 @@ class SkPipe():
 			
 		print 'X_train: {}, X_test: {}, y_train: {}, y_test: {}'.format(
 			X_train.shape, X_test.shape, y_train.shape, y_test.shape)
-		return X_train, y_train, X_test, y_test
+		return X_train.astype(np.float32), y_train, X_test.astype(np.float32), y_test
 	
 	@classmethod
 	def transform_labels(cls, y):
