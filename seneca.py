@@ -1,7 +1,5 @@
 # Author: scott j ward
 
-from __future__ import unicode_literals
-
 import json
 import os
 import numpy as np
@@ -27,13 +25,12 @@ class Seneca():
 		params = {
 				'model': 'ffnet',
 				'batch_size': 100, 
-				'epochs': 1, 
-				'training_steps': 100,
+				'epochs': 10, 
 				'nlp_steps': 1,
 				'n_classes': 4, 
 				'column_names': [], 
 				'loss_func': 'sparse',
-				'hidden_units': [1024,256,512],
+				'hidden_units': [1024,512,256],
 				'target': '',
 				'feature_columns': [], #populated by _input_func()
 				'model_dir': None
@@ -42,21 +39,23 @@ class Seneca():
 		X, y = self.load_synth_data('classification')
 		X_train, y_train, X_test, y_test = SkPipe.create_sets(X, y, 0.2)
 		
+		
+		tfpipe = TfPipe(params)
+		
+		#~ tfpipe.train_test(X_train, y_train, X_test, y_test)
+		
 		for i in range(X.shape[1]):
 			params['column_names'].append('feature_{}'.format(i))
 		X_train = pd.DataFrame(X_train, columns=params['column_names'])
 		X_test = pd.DataFrame(X_test, columns=params['column_names'])
 		
-		tfpipe = TfPipe(params)
 		tfpipe.train_estimator(X_train, y_train)
 		tfpipe.evaluate_estimator(X_test, y_test)
 		
 	@staticmethod
 	def load_csv(filename):
 
-		df = pd.read_csv(filename)
-		
-		return df
+		return pd.read_csv(filename)
 		
 	@staticmethod
 	def save_csv(data, filepath):
