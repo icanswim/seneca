@@ -23,10 +23,10 @@ class TfModel(object):
 	
 	def __init__(self, params, model_input, mode):
 		
-		if mode == tf.estimator.ModeKeys.TRAIN:
-			self.training = True
-		else:
+		if mode in [tf.estimator.ModeKeys.EVAL, tf.estimator.ModeKeys.PREDICT]:
 			self.training = False
+		else:
+			self.training = True
 			
 		self.output = self._build_model(model_input, params)
 		
@@ -52,10 +52,10 @@ class DnnClass(TfEstimator):
 	
 	def _build_estimator(self, params):
 		
-		return tf.estimator.DNNClassifier(hidden_units=params['hidden_units'],
+		return tf.estimator.DNNClassifier(hidden_units=params['units'],
 										feature_columns=params['feature_columns'],
 										model_dir=params['model_dir'],
-										n_classes=params['n_classes'],
+										n_classes=params['classes'],
 										weight_column=None,
 										label_vocabulary=None,
 										optimizer='Adagrad',
@@ -96,13 +96,13 @@ class FfNet(TfModel):
 		
 		with tf.variable_scope('ffnet-model'):
 			
-			for layer, units in enumerate(params['hidden_units']):
+			for layer, units in enumerate(params['units']):
 				
 				fc = self._fc_layer(model_input, units, 'fc_{}'.format(layer))
 				model_input = tf.layers.dropout(inputs=fc, rate=0.2, 
 										training=self.training, name='dropout_{}'.format(layer))
 		
-			output = self._fc_layer(model_input, params['n_classes'], 
+			output = self._fc_layer(model_input, params['classes'], 
 									'model-output', act=tf.identity)
 									
 		return output
@@ -181,7 +181,7 @@ class ConvNet(TfModel):
 						training=self.training, name='dropout2')
 			
 			output = tf.layers.dense(inputs=dropout2, 
-						units=output_shape, name='model-output')
+						units=params['classes'], name='model-output')
 		return output
 		
 class Lstm(TfModel):
@@ -192,17 +192,17 @@ class Lstm(TfModel):
 			model_input = tf.nn.embedding_lookup(params['embedding'], model_input)
 			model_input = tf.transpose(model_input, perm=[1,0,2])
 			# spacy embedding = [vocab_size, 300]
-			model_input = tf.reshape(model_input, params['nlp_steps'], params['batch_size'], params['embedding'].shape[1])
+			model_input = tf.reshape(model_input, [params['steps'], params['batch_size'], params['embedding'].shape[1]])
 		
 		init = tf.contrib.layers.xavier_initializer()
 		
 		with tf.variable_scope('lstm-model'):
 			self.model = tf.contrib.cudnn_rnn.CudnnLSTM(
-												num_layers=4,
-												num_units=64,
+												num_layers=params['layers'],
+												num_units=params['units'],
 												input_mode='linear_input',
 												direction='bidirectional',
-												dropout=training,
+												dropout=.2 if self.training else 0.,
 												seed=None,
 												dtype=tf.float32,
 												kernel_initializer=init,
@@ -210,11 +210,10 @@ class Lstm(TfModel):
 												name='lstm')
 												
 			output, state = self.model(model_input, initial_state=None, 
-												training=self.training)
-																	
+												training=self.training)													
 			output = tf.layers.dense(inputs=output, 
-										units=output_shape, 
-										activation=tf.nn.leaky_relu)
+										units=params['classes'], 
+										activation=tf.nn.leaky_relu)					
 			output = tf.transpose(output)	
 			output = tf.layers.dense(inputs=output, 
 										units=1, 
@@ -222,8 +221,8 @@ class Lstm(TfModel):
 										name='model-output')
 																				
 			output = tf.transpose(tf.squeeze(output, axis=2))
-	
-		return (output, state)							
+			
+		return output							
 													
 																		
 																	
