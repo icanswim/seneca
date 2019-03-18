@@ -20,15 +20,14 @@ class TfPipe:
 			
 	def _input_func(self, X, y=None):
 		#dataset inputs must be roundly divisible by the batch_size
-		if len(self.params['feature_columns']) == 0:
-			
+		if  len(self.params['feature_columns']) == 0:
 			if len(self.params['column_names']) > 0:
 				keys = self.params['column_names']
 			else:	
 				if isinstance(X, (pd.DataFrame, dict)):
 					keys = X.keys()
 				else:
-					print 'X input must be a dict or df..'
+					print 'X input must be a dict or df or you must provide the column_names..'
 					
 			for key in keys:
 				self.params['feature_columns'].append(
@@ -43,6 +42,7 @@ class TfPipe:
 		dataset = dataset.shuffle(X.shape[0])
 		dataset = dataset.repeat(self.params['epochs'])             
 		dataset = dataset.batch(self.params['batch_size'])
+		dataset = dataset.prefetch(self.params['batch_size'])
 		
 		return dataset
 											
@@ -82,8 +82,7 @@ class TfPipe:
 		
 		optimizer = tf.train.AdagradOptimizer(learning_rate=0.1)
 		#~ optimizer = tf.train.AdamOptimizer()
-		train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())
-				
+		train_op = optimizer.minimize(loss, global_step=tf.train.get_global_step())	
 		return train_op, loss
 	
 	def _build_estimator(self):
@@ -154,11 +153,6 @@ class TfPipe:
 											
 			predictions = tf.argmax(self.model.output, axis=1)
 			
-			if y_train.ndim == 1:
-				labels = y
-			else:
-				labels = tf.argmax(y, axis=1)
-			
 			accuracy, accuracy_op = tf.metrics.accuracy(dataset['label'], 
 												dataset['prediction'], 
 												name='accuracy')
@@ -175,7 +169,7 @@ class TfPipe:
 				try:
 					while True:
 						_, loss_val = self.sess.run([train_op, loss])
-						label, prediction = self.sess.run([labels, predictions])
+						label, prediction = self.sess.run([y, predictions])
 						self.sess.run(accuracy_op, 
 										feed_dict={dataset['label']: label, 
 										dataset['prediction']: prediction})
@@ -190,7 +184,7 @@ class TfPipe:
 				self.model.training = False				
 				try:
 					while True:
-						label, prediction = self.sess.run([labels, predictions])
+						label, prediction = self.sess.run([y, predictions])
 						self.sess.run(accuracy_op, 
 										feed_dict={dataset['label']: label, 
 										dataset['prediction']: prediction})
