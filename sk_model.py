@@ -35,7 +35,7 @@ class SkModel():
 				'ridge': {'alpha': [0.1,1.0]},
 				'extra_trees_classifier': {'n_estimators': [100]},
 				'extra_trees_regressor': {'n_estimators': [100]},
-				'mlp': {'hidden_layer_sizes': [(512,256)], 'max_iter': [50]},
+				'mlp': {'hidden_layer_sizes': [(1024,512,256)], 'max_iter': [10]},
 				'bayes': {},
 				'multi_bayes': {'alpha': [.01, 0.1, 1]},
 				'svc': {'C': [1], 'kernel': ['linear']},
