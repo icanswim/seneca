@@ -74,7 +74,11 @@ class Seneca():
 			#~ params['column_names'].append('feature_{}'.format(i))
 		#~ X_train = pd.DataFrame(X_train, columns=params['column_names'])
 		#~ X_test = pd.DataFrame(X_test, columns=params['column_names'])
-
+		
+		#~ tfpipe = TfPipe(params)
+		#~ tfpipe.train_estimator(X_train, y_train)
+		#~ tfpipe.evaluate_estimator(X_test, y_test)
+		
 		#~ #Ex: nlp with spacy and tensorflow session api pipeline and custom model
 		#~ params = {
 				#~ 'model': 'lstm',
