@@ -64,9 +64,11 @@ class SkPipe():
 			X_test = X[test_index]
 			y_test = y[test_index]
 			
-		print 'X_train: {}, X_test: {}, y_train: {}, y_test: {}'.format(
-			X_train.shape, X_test.shape, y_train.shape, y_test.shape)
-		return X_train.astype(np.float32), y_train, X_test.astype(np.float32), y_test
+		print 'X_train: {}, {}\ny_train: {}, {}\n'.format(
+			X_train.shape, X_train.dtype, y_train.shape, y_train.dtype)
+		print 'X_test: {}, {}\ny_test: {}, {}\n'.format(
+			X_test.shape, X_test.dtype, y_test.shape, y_test.dtype)
+		return X_train, y_train, X_test, y_test
 	
 	@classmethod
 	def transform_labels(cls, y):
@@ -123,7 +125,7 @@ class SkPipe():
 						score_func=mutual_info_regression, percentile=90)), 
 				#~ ('pca', PCA(n_components=0.9)),
 				('clusterer', Clusterer('kmeans', 
-						n_clusters=len(np.unique(y)), plot=False)),
+						n_clusters=len(np.unique(y)), plot=True)),
 				])		
 			
 			pipelines.append(("continuous_pipeline", continuous_pipeline))
