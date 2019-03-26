@@ -14,7 +14,7 @@ A data science framework in tensorflow, sklearn and spacy.
 	params = {
 		'model': 'ffnet',
 		'batch_size': 100, 
-		'epochs': 10, 
+		'epochs': 50, 
 		'classes': 4, 
 		'column_names': [], 
 		'loss_func': 'sparse',
@@ -24,7 +24,9 @@ A data science framework in tensorflow, sklearn and spacy.
 
 	X, y = self.load_synth_data('classification')
 
-	X_train, y_train, X_test, y_test = SkPipe.create_sets(X.astype(np.float32), y, 0.2)
+	skpipe = SkPipe()
+	X, y = skpipe.transform_data(X, y, continuous_features='all')
+	X_train, y_train, X_test, y_test = skpipe.create_sets(X.astype(np.float32), y, 0.2)
 
 	tfpipe = TfPipe(params)
 	tfpipe.train_test(X_train, y_train, X_test, y_test)
@@ -32,9 +34,9 @@ A data science framework in tensorflow, sklearn and spacy.
 
 	#Ex: sklearn pipeline with tensorflow estimator api and canned or custom model
 	params = {
-		'model': 'dnn_class', #'ffnet'
+		'model': 'dnn_class', #'ffnet', 'dnn_class'
 		'batch_size': 100, 
-		'epochs': 10, 
+		'epochs': 50, 
 		'classes': 4, 
 		'column_names': [], 
 		'loss_func': 'sparse',
@@ -53,7 +55,7 @@ A data science framework in tensorflow, sklearn and spacy.
 		params['column_names'].append('feature_{}'.format(i))
 	X_train = pd.DataFrame(X_train, columns=params['column_names'])
 	X_test = pd.DataFrame(X_test, columns=params['column_names'])
-	
+
 	tfpipe = TfPipe(params)
 	tfpipe.train_estimator(X_train, y_train)
 	tfpipe.evaluate_estimator(X_test, y_test)
