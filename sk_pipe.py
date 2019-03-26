@@ -116,16 +116,16 @@ class SkPipe():
 		if continuous_features != None:
 			continuous_pipeline = Pipeline([
 				('selector', DataFrameSelector(continuous_features)),
-				('imputer', SimpleImputer(strategy="median")),
+				#~ ('imputer', SimpleImputer(strategy="median")),
 				('std_scaler', StandardScaler()),
-				('normalize', Normalizer()),
-				('f_regression_filter', SelectPercentile(
-						score_func=f_regression, percentile=90)),
-				('mutual_info_filter', SelectPercentile(
-						score_func=mutual_info_regression, percentile=90)), 
+				#~ ('normalize', Normalizer()),
+				#~ ('f_regression_filter', SelectPercentile(
+						#~ score_func=f_regression, percentile=90)),
+				#~ ('mutual_info_filter', SelectPercentile(
+						#~ score_func=mutual_info_regression, percentile=90)), 
 				#~ ('pca', PCA(n_components=0.9)),
-				('clusterer', Clusterer('kmeans', 
-						n_clusters=len(np.unique(y)), plot=True)),
+				#~ ('clusterer', Clusterer('kmeans', 
+						#~ n_clusters=len(np.unique(y)), plot=True)),
 				])		
 			
 			pipelines.append(("continuous_pipeline", continuous_pipeline))
