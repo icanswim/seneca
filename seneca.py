@@ -35,7 +35,7 @@ class Seneca():
 		#~ params = {
 				#~ 'model': 'ffnet',
 				#~ 'batch_size': 100, 
-				#~ 'epochs': 10, 
+				#~ 'epochs': 50, 
 				#~ 'classes': 4, 
 				#~ 'column_names': [], 
 				#~ 'loss_func': 'sparse',
@@ -44,8 +44,10 @@ class Seneca():
 				#~ }
 
 		#~ X, y = self.load_synth_data('classification')
-
-		#~ X_train, y_train, X_test, y_test = SkPipe.create_sets(X.astype(np.float32), y, 0.2)
+		
+		#~ skpipe = SkPipe()
+		#~ X, y = skpipe.transform_data(X, y, continuous_features='all')
+		#~ X_train, y_train, X_test, y_test = skpipe.create_sets(X.astype(np.float32), y, 0.2)
 
 		#~ tfpipe = TfPipe(params)
 		#~ tfpipe.train_test(X_train, y_train, X_test, y_test)
@@ -53,9 +55,9 @@ class Seneca():
 
 		#~ #Ex: sklearn pipeline with tensorflow estimator api and canned or custom model
 		#~ params = {
-				#~ 'model': 'dnn_class', #'ffnet'
+				#~ 'model': 'dnn_class', #'ffnet', 'dnn_class'
 				#~ 'batch_size': 100, 
-				#~ 'epochs': 10, 
+				#~ 'epochs': 50, 
 				#~ 'classes': 4, 
 				#~ 'column_names': [], 
 				#~ 'loss_func': 'sparse',
@@ -78,7 +80,7 @@ class Seneca():
 		#~ tfpipe = TfPipe(params)
 		#~ tfpipe.train_estimator(X_train, y_train)
 		#~ tfpipe.evaluate_estimator(X_test, y_test)
-		
+
 		#~ #Ex: nlp with spacy and tensorflow session api pipeline and custom model
 		#~ params = {
 				#~ 'model': 'lstm',
