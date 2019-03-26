@@ -14,8 +14,34 @@ def load_model(params, model_input=None, mode=None):
 			'lstm': Lstm,
 			'dnn_class': DnnClass,
 			'trees_class': TreesClass}
-			
+	
+	print 'loading model {}...'.format(params['model'])	
 	return models[params['model']](params, model_input, mode)
+	
+def gelu(X, name='gelu'):
+	"""Gaussian Error Linear Unit activation function
+	https://arxiv.org/pdf/1606.08415.pdf
+	"""
+	#~ return tf.multiply(X, tf.erfc(-X / tf.sqrt(2.)) / 2.) #fast
+	return 0.5 * X * (1 + tf.tanh(tf.sqrt(2 / np.pi) * (X + 0.044715 * tf.pow(X, 3))))
+	
+def fc_layer(model_input, output_dim, layer_name, activation=gelu):
+	
+	with tf.variable_scope(layer_name) as scope:
+		
+		W = tf.get_variable('weights', 
+						[model_input.shape[1], output_dim], 
+						initializer=tf.initializers.truncated_normal)
+					
+		b = tf.get_variable('biases', 
+						[output_dim],
+						initializer=tf.zeros_initializer)
+						
+		preactivate = tf.matmul(model_input, W) + b
+		
+		fc = activation(preactivate, name=scope.name)
+		
+	return fc	
 	
 class TfModel(object):
 	
@@ -59,8 +85,8 @@ class DnnClass(TfEstimator):
 										weight_column=None,
 										label_vocabulary=None,
 										optimizer='Adagrad',
-										activation_fn=tf.nn.relu,
-										dropout=0.2,
+										activation_fn=gelu,
+										dropout=.2,
 										input_layer_partitioner=None,
 										config=None,
 										warm_start_from=None,
@@ -97,34 +123,17 @@ class FfNet(TfModel):
 		with tf.variable_scope('ffnet-model'):
 			
 			for layer, units in enumerate(params['units']):
-				
-				fc = self._fc_layer(model_input, units, 'fc_{}'.format(layer))
-				model_input = tf.layers.dropout(inputs=fc, rate=0.2, 
-										training=self.training, name='dropout_{}'.format(layer))
+				fc = tf.contrib.layers.fully_connected(model_input, units, activation_fn=gelu)
+				#~ fc = fc_layer(model_input, units, 'fc_{}'.format(layer), activation=gelu)
+				model_input = tf.layers.dropout(inputs=fc, rate=0, 
+											training=self.training, 
+											name='dropout_{}'.format(layer))
 		
-			output = self._fc_layer(model_input, params['classes'], 
-									'model-output', act=tf.identity)
+			output = fc_layer(model_input, params['classes'], 
+									'model-output', activation=tf.identity)
 									
 		return output
-		
-	def _fc_layer(self, model_input, output_dim, layer_name, act=tf.nn.leaky_relu):
-		
-		with tf.variable_scope(layer_name) as scope:
-			
-			W = tf.get_variable('weights', 
-							[model_input.shape[1], output_dim], 
-							initializer=tf.truncated_normal_initializer)
-						
-			b = tf.get_variable('biases', 
-							[output_dim],
-							initializer=tf.truncated_normal_initializer)
-							
-			preactivate = tf.matmul(model_input, W) + b
-			
-			fc = act(preactivate, name=scope.name)
-			
-		return fc	
-		
+	
 class ConvNet(TfModel):
 	
 	def _build_model(self, model_input, params):
