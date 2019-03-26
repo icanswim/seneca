@@ -124,7 +124,7 @@ class TfPipe:
 								(dataset['X_train'], dataset['y_train']))
 		train_dataset = train_dataset.shuffle(X_train.shape[0])              
 		train_dataset = train_dataset.batch(self.params['batch_size'])
-		
+			
 		test_dataset = tf.data.Dataset.from_tensor_slices(
 								(dataset['X_test'], dataset['y_test']))                
 		test_dataset = test_dataset.batch(self.params['batch_size'])
