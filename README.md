@@ -1,6 +1,8 @@
 # seneca
 A data science framework in tensorflow, sklearn and spacy.
 
+Dependancies: python2, pandas, numpy, tensorflow, sklearn, spacy, matplotlib 
+
 	#Ex: sklearn pipeline and model grid search
 	X, y = self.load_synth_data('classification')
 
